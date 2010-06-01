@@ -1,0 +1,10 @@
+*.log
+uploads
+site.cfg
+buildbot
+wtforms
+tmp
+*.db
+*~
+*.pyc
+.tasbot.cfg
