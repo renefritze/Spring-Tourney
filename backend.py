@@ -2,7 +2,7 @@
 from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import *
-import datetime, os, math
+import datetime, os, math,random
 
 current_db_rev = 1
 Base = declarative_base()
@@ -28,14 +28,38 @@ class Tourney(Base):
 	id 				= Column( Integer, primary_key=True )
 	description		= Column( Text )
 
-	def __init__(self,teams_,description):
+	def __init__(self,db,teams_,description):
+		session = db.sessionmaker()
 		self.teams = teams_
+		random.shuffle(self.teams)
 		self.description = description
 		actual_team_num = len(teams_)
 		padded_team_num = math.pow( 2, math.ceil( math.log( actual_team_num ) ) )
 		for i in range( actual_team_num, padded_team_num ):
 			self.teams.add( Team( 'empty' ) )
+		rounds = int( math.log( padded_team_num ) )
 		
+		matches = []
+		for i in range( padded_team_num / ( 2 ) ):
+			m = Match(self)
+			m.teamA_id = self.teams[i]
+			m.teamB_id = self.teams[-(1+i)]
+			matches.add( m )
+		session.add_all( matches )
+		session.commit()
+		
+		for r in range( 2, rounds ):
+			next_matches = []
+			for i in range( len(matches) / 2 ):
+				m = Match(self)
+				m.prev_matchA_id = matches[2*i]
+				m.prev_matchB_id = matches[2*(i+1)]
+				next_matches.add( m )
+			session.add_all( next_matches )
+			session.commit()
+			matches = next_matches
+		session.close()
+				
 	
 class Player(Base):
 	__tablename__ 	= 'players'
@@ -97,11 +121,8 @@ class Match(Base):
 	prev_matchA = relation('Match', primaryjoin= (prev_matchA_id == id) )
 	prev_matchB = relation('Match', primaryjoin= (prev_matchB_id == id) )
 	
-	def __init__(self,teamA_,teamB_,tourney):
+	def __init__(self,tourney):
 		self.tourney_id 	= tourney.id
-		self.teamA_id		= teamA_.id
-		self.teamB_id		= teamB_.id
-
 	
 class DbConfig(Base):
 	__tablename__	= 'config'

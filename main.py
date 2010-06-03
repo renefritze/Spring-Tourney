@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from bottle import route, run, debug, PasteServer, send_file, redirect, abort, request, default_app
-import os, index, upload, recordlist, details
+import os
 from siteglobals import config,is_debug
 from tw.api import make_middleware
 
