@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from bottle import route, run, debug, PasteServer, send_file, redirect, abort, request, default_app
-import os
-from siteglobals import config,is_debug
+import os,backend
+from siteglobals import config,is_debug,db
 from tw.api import make_middleware
 
 @route('/images/:filename')
@@ -22,13 +22,19 @@ def log_file(filename):
 def favi():
 	return send_file( 'favicon.ico', root=os.getcwd()+'/images/' )
 
+def bracketTest():
+	s = db.sessionmaker()
+	for m in s.query( backend.Match ).all():
+		print m
+
 if __name__=="__main__":
-	port = config.getint('site','port')
-	host = config.get('site','host')
-	app = default_app()
-	application = make_middleware(app, {
-		'toscawidgets.framework.default_view': 'jinja2',
-		'toscawidgets.middleware.inject_resources': True,
-		}, stack_registry=True)
-	debug(is_debug)
-	run(app=application,server=PasteServer,host=host,port=port , reloader=False)	
+	#port = config.getint('site','port')
+	#host = config.get('site','host')
+	#app = default_app()
+	#application = make_middleware(app, {
+		#'toscawidgets.framework.default_view': 'jinja2',
+		#'toscawidgets.middleware.inject_resources': True,
+		#}, stack_registry=True)
+	#debug(is_debug)
+	#run(app=application,server=PasteServer,host=host,port=port , reloader=False)	
+	bracketTest()

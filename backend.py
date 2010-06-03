@@ -31,33 +31,38 @@ class Tourney(Base):
 	def __init__(self,db,teams_,description):
 		session = db.sessionmaker()
 		self.teams = teams_
-		random.shuffle(self.teams)
+		#random.shuffle(self.teams)
 		self.description = description
 		actual_team_num = len(teams_)
-		padded_team_num = math.pow( 2, math.ceil( math.log( actual_team_num ) ) )
+		padded_team_num = int( math.pow( 2, math.ceil( math.log( actual_team_num ) ) + 1 ) )
+		print 'got %d teams, padded to %d teams'%(actual_team_num,padded_team_num)
 		for i in range( actual_team_num, padded_team_num ):
-			self.teams.add( Team( 'empty' ) )
-		rounds = int( math.log( padded_team_num ) )
+			self.teams.append( db.nullTeam )
+		rounds = int( math.log( padded_team_num ) + 1 )
+		print 'doing %d rounds'%rounds
 		
 		matches = []
-		for i in range( padded_team_num / ( 2 ) ):
+		#first round
+		for i in range( int(padded_team_num / 2 ) ):
 			m = Match(self)
-			m.teamA_id = self.teams[i]
-			m.teamB_id = self.teams[-(1+i)]
-			matches.add( m )
+			#take teams from opposite end avoids null-null Matches
+			m.teamA_id = self.teams[i].id
+			m.teamB_id = self.teams[-(1+i)].id
+			matches.append( m )
 		session.add_all( matches )
 		session.commit()
 		
-		for r in range( 2, rounds ):
+		#next rounds are combinations of matches
+		for r in range( 1, rounds ):
 			next_matches = []
-			for i in range( len(matches) / 2 ):
+			for i in range( int(len(matches) / 2 ) ):
 				m = Match(self)
-				m.prev_matchA_id = matches[2*i]
-				m.prev_matchB_id = matches[2*(i+1)]
-				next_matches.add( m )
+				m.prev_matchA_id = matches[2*i].id
+				m.prev_matchB_id = matches[2*i+1].id
+				next_matches.append( m )
 			session.add_all( next_matches )
 			session.commit()
-			matches = next_matches
+			matches = next_matches #next round consists of  pairs of this round's matches
 		session.close()
 				
 	
@@ -78,33 +83,20 @@ class Player(Base):
 	def __str__(self):
 		return "Player(id:%d) %s "%(self.id, self.nick)
 	
-	def addToTeam( self, team ):
-		tourney_id = team.tourney_id
-		session = self.sessionmaker()
-		#allow player only one team per tourney
-		if sess.query( Team.id, Player.id ).filter( Team.tourney_id == tourney_id ).filter( Player.id == self.id ).count():
-			session.close()
-			raise ElementExistsException()
-		team.players.add( self )
-		session.add( team )
-		session.commit()
-		session.close()
-
 class Team(Base):
 	__tablename__ 	= 'teams'
 	id 				= Column( Integer, primary_key=True )
 	nick 			= Column( String(100),index=True )
-	tourney_id		= Column( Integer, ForeignKey( Tourney.id ) )
+	#tourney_id		= Column( Integer, ForeignKey( Tourney.id ) )
 
 	players = relationship('Player', secondary=players_team, backref='teams')
 	
 	def __init__(self, nick='noname' ):
 		self.nick 		= nick
-		self.role 		= role
-		do_hide_results = False
 
 	def __str__(self):
-		return "Player(id:%d) %s "%(self.id, self.nick)
+		#return "Team(id:%d) %s "%(self.id, ', '.join(self.players) )
+		return "Team %s(id:%d) %d player"%(self.nick,self.id, len(self.players) )
 
 class Match(Base):
 	__tablename__ 	= 'matches'
@@ -124,6 +116,14 @@ class Match(Base):
 	def __init__(self,tourney):
 		self.tourney_id 	= tourney.id
 	
+	def __str__(s):
+		if s.prev_matchB_id:
+			return 'Match: id - preA - preB: %d - %d - %d'%(s.id,s.prev_matchA_id,s.prev_matchB_id)
+		elif s.teamA_id and s.teamB_id:
+			return 'Match: id - T_A - T_B : %d - %d - %d'%(s.id,s.teamA_id,s.teamB_id)
+		else:
+			return 'Match: id - %d'%(s.id)
+		
 class DbConfig(Base):
 	__tablename__	= 'config'
 	dbrevision		= Column( Integer, primary_key=True )
@@ -173,9 +173,28 @@ class Backend:
 
 	def addDefaultData(self):
 		session = self.sessionmaker()
-		nullPlayer = Player(nick='emptySlot')
-		session.add(nullPlayer)
+		self.nullPlayer = Player(nick='nullPlayer')
+		session.add( self.nullPlayer )
+		self.nullTeam = Team( 'nullTeam' )
+		self.nullTeam.players.append( self.nullPlayer )
+		session.add( self.nullTeam )
 		session.commit()
+		players = []
+		teams = []
+		for i in range(254):
+			players.append( Player(nick='dummy_%d'%i ) )
+		session.add_all( players )
+		session.commit()
+		for i in range(6):
+			t = Team(nick='Team_%d'%i )
+			teams.append( t )
+			for j in range(random.randint(1,7)):
+				t.players.append( players[i*j] )
+			session.add( t )
+			session.commit()
+			print t
+		
+		to = Tourney( self, teams, 'descr tourney' )
 		session.close()
 		
 	def UpdateDBScheme( self, oldrev, current_db_rev ):
