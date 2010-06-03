@@ -31,14 +31,14 @@ class Tourney(Base):
 	def build(self,db,teams_,description):
 		session = db.sessionmaker()
 		self.teams = teams_
-		#random.shuffle(self.teams)
+		random.shuffle(self.teams)
 		self.description = description
 		actual_team_num = len(teams_)
-		padded_team_num = int( math.pow( 2, math.ceil( math.log( actual_team_num ) ) + 1 ) )
+		padded_team_num = int( math.pow( 2, math.ceil( math.log( actual_team_num, 2 ) )  ) )
 		print 'got %d teams, padded to %d teams'%(actual_team_num,padded_team_num)
 		for i in range( actual_team_num, padded_team_num ):
 			self.teams.append( db.nullTeam )
-		rounds = int( math.log( padded_team_num ) + 1 )
+		rounds = int( math.log( padded_team_num, 2 ) + 1 )
 		print 'doing %d rounds'%rounds
 		
 		matches = []
@@ -210,11 +210,11 @@ class Backend:
 		session.commit()
 		players = []
 		teams = []
-		for i in range(254):
+		for i in range(2054):
 			players.append( Player(nick='dummy_%d'%i ) )
 		session.add_all( players )
 		session.commit()
-		for i in range(6):
+		for i in range(17):
 			t = Team(nick='Team_%d'%i )
 			teams.append( t )
 			for j in range(random.randint(1,7)):
