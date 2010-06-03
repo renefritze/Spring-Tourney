@@ -113,6 +113,11 @@ class Match(Base):
 	prev_matchA = relation('Match', primaryjoin= (prev_matchA_id == id) )
 	prev_matchB = relation('Match', primaryjoin= (prev_matchB_id == id) )
 	
+	#next_match = relation('Match', primaryjoin= or_(prev_matchB_id == id, prev_matchA_id == id) )
+	def _next(self):
+		return object_session(self).query(Match).filter( or_(Match.prev_matchB_id == self.id, Match.prev_matchA_id == self.id ) ).first()
+	next = property(_next)
+	
 	def __init__(self,tourney):
 		self.tourney_id 	= tourney.id
 	
@@ -124,6 +129,10 @@ class Match(Base):
 		else:
 			return 'Match: id - %d'%(s.id)
 		
+#mapper(Match, matches, properties={
+    #'next_match': relation(Node, backref=backref('parent', remote_side=[nodes.c.id]))
+#})
+
 class DbConfig(Base):
 	__tablename__	= 'config'
 	dbrevision		= Column( Integer, primary_key=True )

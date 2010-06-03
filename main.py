@@ -25,7 +25,7 @@ def favi():
 def bracketTest():
 	s = db.sessionmaker()
 	for m in s.query( backend.Match ).all():
-		print m
+		print m,m.next
 
 if __name__=="__main__":
 	#port = config.getint('site','port')
