@@ -74,9 +74,9 @@ class Tourney(Base):
 		match_q = object_session(self).query( Match ).filter( Match.tourney_id == self.id )
 		for m in match_q:
 			if m.teamA_id:
-				n = pydot.Node( 'Match %d:%s vs %s'%(m.id,m.teamA.nick,m.teamB.nick) )
+				n = pydot.Node( 'Match %d'%m.id,label='"Match %d:\\n%s vs\\n %s"'%(m.id,m.teamA.nick,m.teamB.nick), shape="box" )
 			else:
-				n = pydot.Node( 'Match %d: Winner Match %d vs Winner Match %d'%(m.id,m.prev_matchA_id,m.prev_matchB_id) )
+				n = pydot.Node( 'Match %d'%m.id,label='"Match %d:\\n Winner Match %d\\n vs  Winner Match %d"'%(m.id,m.prev_matchA_id,m.prev_matchB_id), shape='box' )
 			nodes[m.id] = n
 			graph.add_node( n )
 
