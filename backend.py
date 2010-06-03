@@ -2,7 +2,7 @@
 from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import *
-import datetime, os, math,random
+import datetime, os, math,random, pydot
 
 current_db_rev = 1
 Base = declarative_base()
@@ -28,7 +28,7 @@ class Tourney(Base):
 	id 				= Column( Integer, primary_key=True )
 	description		= Column( Text )
 
-	def __init__(self,db,teams_,description):
+	def build(self,db,teams_,description):
 		session = db.sessionmaker()
 		self.teams = teams_
 		#random.shuffle(self.teams)
@@ -45,6 +45,7 @@ class Tourney(Base):
 		#first round
 		for i in range( int(padded_team_num / 2 ) ):
 			m = Match(self)
+			m.tourney_id = self.id
 			#take teams from opposite end avoids null-null Matches
 			m.teamA_id = self.teams[i].id
 			m.teamB_id = self.teams[-(1+i)].id
@@ -57,6 +58,7 @@ class Tourney(Base):
 			next_matches = []
 			for i in range( int(len(matches) / 2 ) ):
 				m = Match(self)
+				m.tourney_id = self.id
 				m.prev_matchA_id = matches[2*i].id
 				m.prev_matchB_id = matches[2*i+1].id
 				next_matches.append( m )
@@ -65,6 +67,24 @@ class Tourney(Base):
 			matches = next_matches #next round consists of  pairs of this round's matches
 		session.close()
 				
+	def generateGraph(self, fn ):
+		graph = pydot.Dot(graph_type='digraph')
+		#session = 
+		nodes = dict()
+		match_q = object_session(self).query( Match ).filter( Match.tourney_id == self.id )
+		for m in match_q:
+			if m.teamA_id:
+				n = pydot.Node( 'Match %d:%s vs %s'%(m.id,m.teamA.nick,m.teamB.nick) )
+			else:
+				n = pydot.Node( 'Match %d: Winner Match %d vs Winner Match %d'%(m.id,m.prev_matchA_id,m.prev_matchB_id) )
+			nodes[m.id] = n
+			graph.add_node( n )
+
+		for m in match_q:
+			if m.next:
+				e = pydot.Edge( nodes[m.id], nodes[m.next.id] )
+				graph.add_edge( e )
+		graph.write_png( fn )
 	
 class Player(Base):
 	__tablename__ 	= 'players'
@@ -203,7 +223,11 @@ class Backend:
 			session.commit()
 			print t
 		
-		to = Tourney( self, teams, 'descr tourney' )
+		to = Tourney()
+		session.add( to )
+		session.commit()
+		to.build( self, teams, 'descr tourney' )
+		to.generateGraph( 'dud.png' )
 		session.close()
 		
 	def UpdateDBScheme( self, oldrev, current_db_rev ):
