@@ -23,6 +23,11 @@ players_team = Table('players_team', Base.metadata,
 	Column('player_id', Integer, ForeignKey('players.id'))
 )
 
+class mEdge(object):
+	def __init__(s,start,end):
+		s.start	= start
+		s.end	= end
+
 class Tourney(Base):
 	__tablename__ 	= 'tourneys'
 	id 				= Column( Integer, primary_key=True )
@@ -95,13 +100,13 @@ class Tourney(Base):
 		edges = []
 		for m in match_q:
 			if m.next:
-				edges.append( ( m.id, m.next.id ) )
+				edges.append( mEdge( m.id, m.next.id ) )
 			else:
 				final_id = m.id
 		import jsonpickle
 		with open('tourneys/%s.js'%self.id,'w') as tourney_js:
 			tourney_js.write( 'var matches = %s;\n' % jsonpickle.encode( nodes , unpicklable=False ) )
-			tourney_js.write( 'var egdes = %s;\n' % jsonpickle.encode( edges , unpicklable=False ) )
+			tourney_js.write( 'var edges = %s;\n' % jsonpickle.encode( edges , unpicklable=False ) )
 			tourney_js.write( 'var final_id = %s;\n' % jsonpickle.encode( final_id , unpicklable=False ) )
 	
 	

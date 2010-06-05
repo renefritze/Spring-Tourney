@@ -11,31 +11,42 @@
 
 <script type="text/javascript" src="tourneys/{{tourney.id}}.js"></script>
 <script type="text/javascript">
+	var width = 640;
+	var height = 480;
 	var box_width = 80;
 	var box_height = 30;
 	var rounded = 4;
+	var boxes = Array();
 function matchBox(r, match, offset) {
 	var shape = r.set().
-		push( r.rect( 100, 80 + offset, box_width, box_height, rounded) ).
-		push( r.text(100 + box_width/2, 80 + offset + box_height/3, "longstringhuaifurei" ) ).
-		push( r.text(100 + box_width/2, 80 + offset + 2 * box_height/3, match["id"] ) );
+		push( r.rect( width/2, 					80 + offset, 					box_width, box_height, rounded) ).
+		push( r.text( width/2 + box_width/2, 	80 + offset + box_height/3, 	match["lineA"] ) ).
+		push( r.text( width/2 + box_width/2, 	80 + offset + 2 * box_height/3, match["lineB"] ) );
+	boxes[match["id"]] = shape;
 	return shape;
 }
+
+function subTree( r, nodeId, direction /*-1:up/1:down*/, xoffset, yoffset) {
+	var match = matches[nodeId];
+	matchBox( r, match, direction * 60 )
+	if ( match.prevA )
+		subTree( r, match.prevA, direction );
+	if ( match.prevB )
+		subTree( r, match.prevB, direction );
+}
 window.onload = function () {
-	var width = 640;
-	var height = 480;
 
 	var r = Raphael("match_container", 640, 480);
 	var offset = 0;
-	var boxes = Array();
-	for ( idx in matches ) {
-		match = matches[idx];
-		box = matchBox( r, match, offset );
-		boxes.push( box )
-		offset += 80;
-	}
-	for ( var i = 0; i < boxes.length - 1; i++ ) {
-		r.connection( boxes[i], boxes[i+1] );
+	var final = matches[final_id];
+	var final_box = matchBox( r, final, 0 );
+	subTree( r, final["prevA"], -1 );
+	subTree( r, final["prevB"], 1 );
+	
+	
+	
+	for ( var i = 0; i < edges.length - 1; i++ ) {
+		r.connection( boxes[edges[i].start], boxes[edges[i].end] );
 	}
 	
 	
