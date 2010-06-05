@@ -27,7 +27,7 @@ def output():
 		print m,m.next
 	
 	with open('tourneys/%s.js'%id,'wb') as tourney_js:
-		tourney_js.write( 'var matches = ' + jsonpickle.encode( q_matches.all() , unpicklable=False ) )
+		tourney_js.write( 'var matches = %s;' % jsonpickle.encode( q_matches.all() , unpicklable=False ) )
 
 	
 	ret = env.get_template('tourney.html').render( tourney=tourney )
