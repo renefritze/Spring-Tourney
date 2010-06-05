@@ -66,6 +66,7 @@ class Tourney(Base):
 			session.commit()
 			matches = next_matches #next round consists of  pairs of this round's matches
 		session.close()
+		self.saveJSONdata()
 				
 	def generateGraph(self, fn ):
 		graph = pydot.Dot(graph_type='digraph')
@@ -84,6 +85,26 @@ class Tourney(Base):
 				e = pydot.Edge( nodes[m.id], nodes[m.next.id] )
 				graph.add_edge( e )
 		graph.write_png( fn )
+	
+	def saveJSONdata(self):
+		nodes = dict()
+		match_q = object_session(self).query( Match ).filter( Match.tourney_id == self.id )
+		for m in match_q:
+			mn  = MatchNode( m )
+			nodes[m.id] = mn
+		edges = []
+		for m in match_q:
+			if m.next:
+				edges.append( ( m.id, m.next.id ) )
+			else:
+				final_id = m.id
+		import jsonpickle
+		with open('tourneys/%s.js'%self.id,'w') as tourney_js:
+			tourney_js.write( 'var matches = %s;\n' % jsonpickle.encode( nodes , unpicklable=False ) )
+			tourney_js.write( 'var egdes = %s;\n' % jsonpickle.encode( edges , unpicklable=False ) )
+			tourney_js.write( 'var final_id = %s;\n' % jsonpickle.encode( final_id , unpicklable=False ) )
+	
+	
 	
 class Player(Base):
 	__tablename__ 	= 'players'
@@ -148,6 +169,14 @@ class Match(Base):
 			return 'Match: id - T_A - T_B : %d - %d - %d'%(s.id,s.teamA_id,s.teamB_id)
 		else:
 			return 'Match: id - %d'%(s.id)
+
+class MatchNode(object):
+	def __init__(self,match):
+		self.lineA = '%s | %d'%(match.teamA.nick,match.scoreA) if match.teamA_id else 'Winner match %d'%match.prev_matchA_id
+		self.lineB = '%s | %d'%(match.teamB.nick,match.scoreB) if match.teamB_id else 'Winner match %d'%match.prev_matchB_id
+		self.id = match.id
+		self.prevA = match.prev_matchA_id
+		self.prevB = match.prev_matchB_id
 		
 class DbConfig(Base):
 	__tablename__	= 'config'

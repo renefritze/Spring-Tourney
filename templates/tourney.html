@@ -9,40 +9,52 @@
     <script type="text/javascript" src="static/dracula_graph.js"></script>
     <script type="text/javascript" src="static/dracula_algorithms.js"></script>
 
-<!-- <script type="text/javascript" src="tourneys/{{tourney.id}}.js"></script> -->
+<script type="text/javascript" src="tourneys/{{tourney.id}}.js"></script>
 <script type="text/javascript">
-var matches = [{"tourney_id": 1, "_sa_instance_state": {"py/state": {"instance": {"py/ref": "/"}, "callables": {}, "expired": false, "modified": false, "key": {"py/tuple": [{"py/type": "backend.Match"}, {"py/tuple": [1]}]}}}, "teamB_id": 9, "scoreB": 0, "teamA_id": 7, "prev_matchA_id": null, "prev_matchB_id": null, "id": 1, "scoreA": 0}, {"tourney_id": 1, "_sa_instance_state": {"py/state": {"instance": {"py/ref": "/"}, "callables": {}, "expired": false, "modified": false, "key": {"py/tuple": [{"py/type": "backend.Match"}, {"py/tuple": [2]}]}}}, "teamB_id": 5, "scoreB": 0, "teamA_id": 4, "prev_matchA_id": null, "prev_matchB_id": null, "id": 2, "scoreA": 0}, {"tourney_id": 1, "_sa_instance_state": {"py/state": {"instance": {"py/ref": "/"}, "callables": {}, "expired": false, "modified": false, "key": {"py/tuple": [{"py/type": "backend.Match"}, {"py/tuple": [3]}]}}}, "teamB_id": 3, "scoreB": 0, "teamA_id": 6, "prev_matchA_id": null, "prev_matchB_id": null, "id": 3, "scoreA": 0}, {"tourney_id": 1, "_sa_instance_state": {"py/state": {"instance": {"py/ref": "/"}, "callables": {}, "expired": false, "modified": false, "key": {"py/tuple": [{"py/type": "backend.Match"}, {"py/tuple": [4]}]}}}, "teamB_id": 8, "scoreB": 0, "teamA_id": 2, "prev_matchA_id": null, "prev_matchB_id": null, "id": 4, "scoreA": 0}, {"tourney_id": 1, "_sa_instance_state": {"py/state": {"instance": {"py/ref": "/"}, "callables": {}, "expired": false, "modified": false, "key": {"py/tuple": [{"py/type": "backend.Match"}, {"py/tuple": [5]}]}}}, "teamB_id": null, "scoreB": 0, "teamA_id": null, "prev_matchA_id": 1, "prev_matchB_id": 2, "id": 5, "scoreA": 0}, {"tourney_id": 1, "_sa_instance_state": {"py/state": {"instance": {"py/ref": "/"}, "callables": {}, "expired": false, "modified": false, "key": {"py/tuple": [{"py/type": "backend.Match"}, {"py/tuple": [6]}]}}}, "teamB_id": null, "scoreB": 0, "teamA_id": null, "prev_matchA_id": 3, "prev_matchB_id": 4, "id": 6, "scoreA": 0}, {"tourney_id": 1, "_sa_instance_state": {"py/state": {"modified": false, "committed_state": {}, "instance": {"py/ref": "/"}, "callables": {}, "key": {"py/tuple": [{"py/type": "backend.Match"}, {"py/tuple": [7]}]}, "expired": false}}, "teamB_id": null, "scoreB": 0, "teamA_id": null, "prev_matchA_id": 5, "prev_matchB_id": 6, "id": 7, "scoreA": 0}]
+	var box_width = 80;
+	var box_height = 30;
+	var rounded = 4;
 function matchBox(r, match, offset) {
-	var c = r.circle( 100, 80 + offset, 10 );
-	var t = r.text(100, 80 + offset, match["id"] );
-	
+	var shape = r.set().
+		push( r.rect( 100, 80 + offset, box_width, box_height, rounded) ).
+		push( r.text(100 + box_width/2, 80 + offset + box_height/3, "longstringhuaifurei" ) ).
+		push( r.text(100 + box_width/2, 80 + offset + 2 * box_height/3, match["id"] ) );
+	return shape;
 }
 window.onload = function () {
-/*	var r = Raphael("match_container", 640, 480);
+	var width = 640;
+	var height = 480;
+
+	var r = Raphael("match_container", 640, 480);
 	var offset = 0;
+	var boxes = Array();
 	for ( idx in matches ) {
 		match = matches[idx];
-		matchBox( r, match, offset );
-		offset += 30;
+		box = matchBox( r, match, offset );
+		boxes.push( box )
+		offset += 80;
+	}
+	for ( var i = 0; i < boxes.length - 1; i++ ) {
+		r.connection( boxes[i], boxes[i+1] );
 	}
 	
-	*/
- var g = new Graph();
-g.addEdge("strawberry", "cherry");
-g.addEdge("strawberry", "apple");
-g.addEdge("strawberry", "tomato");
- 
-g.addEdge("tomato", "apple");
-g.addEdge("tomato", "kiwi");
- 
-g.addEdge("cherry", "apple");
-g.addEdge("cherry", "kiwi");
- 
-var layouter = new Graph.Layout.Spring(g);
-layouter.layout();
- 
-var renderer = new Graph.Renderer.Raphael('match_container', g, 400, 300);
-renderer.draw();
+	
+//  var g = new Graph();
+// g.addEdge("strawberry", "cherry");
+// g.addEdge("strawberry", "apple");
+// g.addEdge("strawberry", "tomato");
+//  
+// g.addEdge("tomato", "apple");
+// g.addEdge("tomato", "kiwi");
+//  
+// g.addEdge("cherry", "apple");
+// g.addEdge("cherry", "kiwi");
+//  
+// var layouter = new Graph.Layout.Spring(g);
+// layouter.layout();
+//  
+// var renderer = new Graph.Renderer.Raphael('match_container', g, 400, 300);
+// renderer.draw();
 
 }
 </script>
