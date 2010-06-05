@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block head %}
+<!-- <script type="text/javascript" src="tourneys/{{tourney.id}}.js"></script> -->
+<script type="text/javascript" src="static/raphael.js"></script>
+<!-- <script type="text/javascript" src="tourneys/{{tourney.id}}.js"></script> -->
+<script type="text/javascript">
+var matches = [{"tourney_id": 1, "_sa_instance_state": {"py/state": {"instance": {"py/ref": "/"}, "callables": {}, "expired": false, "modified": false, "key": {"py/tuple": [{"py/type": "backend.Match"}, {"py/tuple": [1]}]}}}, "teamB_id": 9, "scoreB": 0, "teamA_id": 7, "prev_matchA_id": null, "prev_matchB_id": null, "id": 1, "scoreA": 0}, {"tourney_id": 1, "_sa_instance_state": {"py/state": {"instance": {"py/ref": "/"}, "callables": {}, "expired": false, "modified": false, "key": {"py/tuple": [{"py/type": "backend.Match"}, {"py/tuple": [2]}]}}}, "teamB_id": 5, "scoreB": 0, "teamA_id": 4, "prev_matchA_id": null, "prev_matchB_id": null, "id": 2, "scoreA": 0}, {"tourney_id": 1, "_sa_instance_state": {"py/state": {"instance": {"py/ref": "/"}, "callables": {}, "expired": false, "modified": false, "key": {"py/tuple": [{"py/type": "backend.Match"}, {"py/tuple": [3]}]}}}, "teamB_id": 3, "scoreB": 0, "teamA_id": 6, "prev_matchA_id": null, "prev_matchB_id": null, "id": 3, "scoreA": 0}, {"tourney_id": 1, "_sa_instance_state": {"py/state": {"instance": {"py/ref": "/"}, "callables": {}, "expired": false, "modified": false, "key": {"py/tuple": [{"py/type": "backend.Match"}, {"py/tuple": [4]}]}}}, "teamB_id": 8, "scoreB": 0, "teamA_id": 2, "prev_matchA_id": null, "prev_matchB_id": null, "id": 4, "scoreA": 0}, {"tourney_id": 1, "_sa_instance_state": {"py/state": {"instance": {"py/ref": "/"}, "callables": {}, "expired": false, "modified": false, "key": {"py/tuple": [{"py/type": "backend.Match"}, {"py/tuple": [5]}]}}}, "teamB_id": null, "scoreB": 0, "teamA_id": null, "prev_matchA_id": 1, "prev_matchB_id": 2, "id": 5, "scoreA": 0}, {"tourney_id": 1, "_sa_instance_state": {"py/state": {"instance": {"py/ref": "/"}, "callables": {}, "expired": false, "modified": false, "key": {"py/tuple": [{"py/type": "backend.Match"}, {"py/tuple": [6]}]}}}, "teamB_id": null, "scoreB": 0, "teamA_id": null, "prev_matchA_id": 3, "prev_matchB_id": 4, "id": 6, "scoreA": 0}, {"tourney_id": 1, "_sa_instance_state": {"py/state": {"modified": false, "committed_state": {}, "instance": {"py/ref": "/"}, "callables": {}, "key": {"py/tuple": [{"py/type": "backend.Match"}, {"py/tuple": [7]}]}, "expired": false}}, "teamB_id": null, "scoreB": 0, "teamA_id": null, "prev_matchA_id": 5, "prev_matchB_id": 6, "id": 7, "scoreA": 0}]
+function loadMatches() {
+	var div = document.getElementById('match_container');
+	for ( idx in matches ) {
+		match = matches[idx];
+		var m_div = document.createElement('div');
+		m_div.setAttribute("Id",matches.id );
+		
+		m_div.innerHTML =  match["tourney_id"] ;
+		div.appendChild( m_div );
+	}
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<a href="javascript:loadMatches();">LOAD!</a>
+<div id="match_container">
+
+</div>
+{% endblock %}
+

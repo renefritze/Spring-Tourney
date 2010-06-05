@@ -69,7 +69,6 @@ class Tourney(Base):
 				
 	def generateGraph(self, fn ):
 		graph = pydot.Dot(graph_type='digraph')
-		#session = 
 		nodes = dict()
 		match_q = object_session(self).query( Match ).filter( Match.tourney_id == self.id )
 		for m in match_q:
@@ -126,6 +125,8 @@ class Match(Base):
 	teamB_id		= Column( Integer, ForeignKey( Team.id ) )
 	prev_matchA_id	= Column( Integer, ForeignKey( 'matches.id' ), nullable=True )
 	prev_matchB_id	= Column( Integer, ForeignKey( 'matches.id' ), nullable=True )
+	scoreA			= Column( Integer, default=0 )
+	scoreB			= Column( Integer, default=0 )
 	
 	teamA = relation('Team', primaryjoin= (teamA_id == Team.id) )
 	teamB = relation('Team', primaryjoin= (teamB_id == Team.id) )
@@ -133,7 +134,6 @@ class Match(Base):
 	prev_matchA = relation('Match', primaryjoin= (prev_matchA_id == id) )
 	prev_matchB = relation('Match', primaryjoin= (prev_matchB_id == id) )
 	
-	#next_match = relation('Match', primaryjoin= or_(prev_matchB_id == id, prev_matchA_id == id) )
 	def _next(self):
 		return object_session(self).query(Match).filter( or_(Match.prev_matchB_id == self.id, Match.prev_matchA_id == self.id ) ).first()
 	next = property(_next)
@@ -149,10 +149,6 @@ class Match(Base):
 		else:
 			return 'Match: id - %d'%(s.id)
 		
-#mapper(Match, matches, properties={
-    #'next_match': relation(Node, backref=backref('parent', remote_side=[nodes.c.id]))
-#})
-
 class DbConfig(Base):
 	__tablename__	= 'config'
 	dbrevision		= Column( Integer, primary_key=True )
@@ -214,7 +210,7 @@ class Backend:
 			players.append( Player(nick='dummy_%d'%i ) )
 		session.add_all( players )
 		session.commit()
-		for i in range(17):
+		for i in range(8):
 			t = Team(nick='Team_%d'%i )
 			teams.append( t )
 			for j in range(random.randint(1,7)):
