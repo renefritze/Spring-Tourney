@@ -41,13 +41,18 @@ function init(){
         //set animation transition type
         transition: Trans.Quart.easeInOut,
         //set distance between node and its children
-        levelDistance: 50,
+        levelDistance: 40,
+		orientation: "right",
+		levelsToShow: 5,
+// 		align: "center",
+		constrained: false,
+					
         //set node and edge styles
         //set overridable=true for styling individual
         //nodes or edges
         Node: {
-            height: 20,
-            width: 60,
+            height: 40,
+            width: 120,
             type: 'rectangle',
             color: '#aaa',
             overridable: true
@@ -71,19 +76,19 @@ function init(){
         //your node.
         onCreateLabel: function(label, node){
             label.id = node.id;            
-            label.innerHTML = node.name;
+            label.innerHTML = node.data.html;
             label.onclick = function(){
                 st.onClick(node.id);
             };
             //set label styles
             var style = label.style;
-            style.width = 60 + 'px';
-            style.height = 17 + 'px';            
+            style.width = 130 + 'px';
+            style.height = 47 + 'px';            
             style.cursor = 'pointer';
             style.color = '#333';
             style.fontSize = '0.8em';
             style.textAlign= 'center';
-            style.paddingTop = '3px';
+            style.paddingTop = '13px';
         },
         
         //This method is called right before plotting
@@ -133,9 +138,10 @@ function init(){
     //compute node positions and layout
     st.compute();
     //optional: make a translation of the tree
-    st.geom.translate(new Complex(-200, 0), "startPos");
+    st.geom.translate(new Complex(-200, 0), "pos");
     //emulate a click on the root node.
     st.onClick(st.root);
+// 	st.refresh();
     //end
     //Add event handlers to switch spacetree orientation.
     var top = get('r-top'), 

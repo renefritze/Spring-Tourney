@@ -2,27 +2,18 @@
 
 {% block head %}
 <!--[if IE]><script language="javascript" type="text/javascript" src="/static/excanvas.js"></script><![endif]--> 
-<script language="javascript" type="text/javascript" src="/static/jit-yc.js"></script>
+<!-- <script language="javascript" type="text/javascript" src="/static/jit-yc.js"></script> -->
+<script language="javascript" type="text/javascript" src="/static/jit.js"></script>
 <script type="text/javascript" src="/tourneys/{{tourney.id}}.js"></script>
 <script type="text/javascript" src="/tourneys/base.js"></script>
 
 <script type="text/javascript">
-	var width = 640;
-	var height = 480;
-	var box_width = 80;
-	var box_height = 30;
-	var rounded = 4;
-	var boxes = Array();
 
 </script>
 {% endblock %}
 
 {% block content %}
 <div id="container"> 
- 
-<div id="left-container"> 
-
-</div> 
  
 <div id="center-container"> 
     <div id="infovis"></div>    
@@ -37,7 +28,7 @@
             <label for="r-left">left </label> 
         </td> 
         <td> 
-            <input type="radio" id="r-left" name="orientation" checked="checked" value="left" /> 
+            <input type="radio" id="r-left" name="orientation" value="left" /> 
         </td> 
     </tr> 
     <tr> 
@@ -60,7 +51,7 @@
             <label for="r-right">right </label> 
           </td> 
           <td> 
-           <input type="radio" id="r-right" name="orientation" value="right" /> 
+           <input type="radio" id="r-right" name="orientation" value="right" checked="checked" /> 
           </td> 
     </tr> 
 </table> 

@@ -46,6 +46,26 @@ class MatchData(object):
 		self.id = match.id
 		self.prevA = match.prev_matchA_id
 		self.prevB = match.prev_matchB_id
+		if match.teamA_id:
+			self.html = '''<div class="node"><table>
+				<tr>
+					<td class="node-left-col">%s</td>
+					<td align="right" class="node-right-col">%d</td>
+				</tr>
+				<tr>
+					<td class="node-left-col">%s</td>
+					<td align="right" class="node-right-col">%d</td>
+				</tr>			
+			</table></div>'''%(match.teamA.nick,match.scoreA,match.teamB.nick,match.scoreB )
+		else:
+			self.html = '''<div class="node"><table>
+				<tr>
+					<td>%s</td>
+				</tr>
+				<tr>
+					<td>%s</td>
+				</tr>			
+			</table></div>'''%(self.lineA,self.lineB)
 		
 	
 class Tourney(Base):
@@ -253,22 +273,23 @@ class Backend:
 			players.append( Player(nick='dummy_%d'%i ) )
 		session.add_all( players )
 		session.commit()
-		for i in range(8):
+		for i in range(80):
 			t = Team(nick='Team_%d'%i )
 			teams.append( t )
 			for j in range(random.randint(1,7)):
 				t.players.append( players[i*j] )
 			session.add( t )
 			session.commit()
-			print t
 		
 		to = Tourney()
 		session.add( to )
 		session.commit()
-		to.build( self, teams, 'descr tourney' )
-		to.generateGraph( 'dud.png' )
+		to.build( self, teams[0:7], 'descr tourney' )
+		to2 = Tourney()
+		session.add( to2 )
+		session.commit()
+		to2.build( self, teams[7:32], 'descr tourney' )
 		session.close()
-		
 	def UpdateDBScheme( self, oldrev, current_db_rev ):
 		pass
 
