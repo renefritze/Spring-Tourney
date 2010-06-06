@@ -3,7 +3,8 @@
 {% block head %}
 <!--[if IE]><script language="javascript" type="text/javascript" src="/static/excanvas.js"></script><![endif]--> 
 <script language="javascript" type="text/javascript" src="/static/jit-yc.js"></script>
-<script type="text/javascript" src="tourneys/{{tourney.id}}.js"></script>
+<script type="text/javascript" src="/tourneys/{{tourney.id}}.js"></script>
+<script type="text/javascript" src="/tourneys/base.js"></script>
 
 <script type="text/javascript">
 	var width = 640;
@@ -12,64 +13,61 @@
 	var box_height = 30;
 	var rounded = 4;
 	var boxes = Array();
-function matchBox(r, match, offset) {
-	var shape = r.set().
-		push( r.rect( width/2, 					80 + offset, 					box_width, box_height, rounded) ).
-		push( r.text( width/2 + box_width/2, 	80 + offset + box_height/3, 	match["lineA"] ) ).
-		push( r.text( width/2 + box_width/2, 	80 + offset + 2 * box_height/3, match["lineB"] ) );
-	boxes[match["id"]] = shape;
-	return shape;
-}
 
-function subTree( r, nodeId, direction /*-1:up/1:down*/, xoffset, yoffset) {
-	var match = matches[nodeId];
-	matchBox( r, match, direction * 60 )
-	if ( match.prevA )
-		subTree( r, match.prevA, direction );
-	if ( match.prevB )
-		subTree( r, match.prevB, direction );
-}
-window.onload = function () {
-
-	var r = Raphael("match_container", width,height );
-
-	var offset = 0;
-	var final = matches[final_id];
-	var final_box = matchBox( r, final, 0 );
-	subTree( r, final["prevA"], -1 );
-	subTree( r, final["prevB"], 1 );
-	
-	
-	
-	for ( var i = 0; i < edges.length - 1; i++ ) {
-		r.connection( boxes[edges[i].start], boxes[edges[i].end] );
-	}
-	
-	
-//  var g = new Graph();
-// g.addEdge("strawberry", "cherry");
-// g.addEdge("strawberry", "apple");
-// g.addEdge("strawberry", "tomato");
-//  
-// g.addEdge("tomato", "apple");
-// g.addEdge("tomato", "kiwi");
-//  
-// g.addEdge("cherry", "apple");
-// g.addEdge("cherry", "kiwi");
-//  
-// var layouter = new Graph.Layout.Spring(g);
-// layouter.layout();
-//  
-// var renderer = new Graph.Renderer.Raphael('match_container', g, 400, 300);
-// renderer.draw();
-
-}
 </script>
 {% endblock %}
 
 {% block content %}
-<div id="match_container">
+<div id="container"> 
+ 
+<div id="left-container"> 
 
-</div>
+</div> 
+ 
+<div id="center-container"> 
+    <div id="infovis"></div>    
+</div> 
+ 
+<div id="right-container"> 
+ 
+<!--<h4>Change Tree Orientation</h4> 
+<table> 
+    <tr> 
+        <td> 
+            <label for="r-left">left </label> 
+        </td> 
+        <td> 
+            <input type="radio" id="r-left" name="orientation" checked="checked" value="left" /> 
+        </td> 
+    </tr> 
+    <tr> 
+         <td> 
+            <label for="r-top">top </label> 
+         </td> 
+         <td> 
+            <input type="radio" id="r-top" name="orientation" value="top" /> 
+         </td> 
+    <tr> 
+         <td> 
+            <label for="r-bottom">bottom </label> 
+          </td> 
+          <td> 
+            <input type="radio" id="r-bottom" name="orientation" value="bottom" /> 
+          </td> 
+    </tr> 
+    <tr> 
+          <td> 
+            <label for="r-right">right </label> 
+          </td> 
+          <td> 
+           <input type="radio" id="r-right" name="orientation" value="right" /> 
+          </td> 
+    </tr> 
+</table> -->
+ 
+</div> 
+ 
+<div id="log"></div> 
+</div> 
 {% endblock %}
 

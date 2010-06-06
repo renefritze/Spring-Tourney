@@ -23,11 +23,30 @@ players_team = Table('players_team', Base.metadata,
 	Column('player_id', Integer, ForeignKey('players.id'))
 )
 
-class mEdge(object):
-	def __init__(s,start,end):
-		s.start	= start
-		s.end	= end
-
+class JSONnode(object):
+	def __init__(s,root_match):
+		print root_match
+		s.id		= 'Match #%d'%root_match.id
+		s.name		= s.id
+		s.data		= MatchData(root_match)
+		s.children	= []
+		
+		if root_match.prev_matchA:
+			#print root_match.prev_matchA_id
+			s.children.append( JSONnode( root_match.prev_matchA ) )
+		if root_match.prev_matchB:
+			s.children.append( JSONnode( root_match.prev_matchB ) )
+		
+		
+class MatchData(object):
+	def __init__(self,match):
+		self.lineA = '%s | %d'%(match.teamA.nick,match.scoreA) if match.teamA_id else 'Winner match %d'%match.prev_matchA_id
+		self.lineB = '%s | %d'%(match.teamB.nick,match.scoreB) if match.teamB_id else 'Winner match %d'%match.prev_matchB_id
+		self.id = match.id
+		self.prevA = match.prev_matchA_id
+		self.prevB = match.prev_matchB_id
+		
+	
 class Tourney(Base):
 	__tablename__ 	= 'tourneys'
 	id 				= Column( Integer, primary_key=True )
@@ -95,20 +114,15 @@ class Tourney(Base):
 		nodes = dict()
 		match_q = object_session(self).query( Match ).filter( Match.tourney_id == self.id )
 		for m in match_q:
-			mn  = MatchNode( m )
-			nodes[m.id] = mn
-		edges = []
-		for m in match_q:
-			if m.next:
-				edges.append( mEdge( m.id, m.next.id ) )
-			else:
-				final_id = m.id
+			if not m.next:
+				final = m
+		#print final
+		tree = JSONnode( final )
 		import jsonpickle
 		with open('tourneys/%s.js'%self.id,'w') as tourney_js:
-			tourney_js.write( 'var matches = %s;\n' % jsonpickle.encode( nodes , unpicklable=False ) )
-			tourney_js.write( 'var edges = %s;\n' % jsonpickle.encode( edges , unpicklable=False ) )
-			tourney_js.write( 'var final_id = %s;\n' % jsonpickle.encode( final_id , unpicklable=False ) )
-	
+			tourney_js.write( 'var tree = %s;\n' % jsonpickle.encode( tree , unpicklable=True ) )
+			#tourney_js.write( 'var edges = %s;\n' % jsonpickle.encode( edges , unpicklable=False ) )
+			tourney_js.write( 'var final_id = %s;\n' % jsonpickle.encode( final.id , unpicklable=False ) )
 	
 	
 class Player(Base):
@@ -174,14 +188,6 @@ class Match(Base):
 			return 'Match: id - T_A - T_B : %d - %d - %d'%(s.id,s.teamA_id,s.teamB_id)
 		else:
 			return 'Match: id - %d'%(s.id)
-
-class MatchNode(object):
-	def __init__(self,match):
-		self.lineA = '%s | %d'%(match.teamA.nick,match.scoreA) if match.teamA_id else 'Winner match %d'%match.prev_matchA_id
-		self.lineB = '%s | %d'%(match.teamB.nick,match.scoreB) if match.teamB_id else 'Winner match %d'%match.prev_matchB_id
-		self.id = match.id
-		self.prevA = match.prev_matchA_id
-		self.prevB = match.prev_matchB_id
 		
 class DbConfig(Base):
 	__tablename__	= 'config'
