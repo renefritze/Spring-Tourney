@@ -1,13 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from bottle import route, run, debug, PasteServer, send_file, redirect, abort, request, default_app
-import os,backend,tourney
+import os,backend,tourney,profile
 from siteglobals import config,is_debug,db
 from tw.api import make_middleware
 
 @route('/images/:filename')
 def image_file(filename):
+	print filename
 	return send_file( filename, root=os.getcwd()+'/images/' )
+@route('/images/:filename/:f')#make this not so silly 
+def image_file2(filename,f):
+	print filename
+	return send_file( filename+'/'+f, root=os.getcwd()+'/images/' )
+
 
 @route('/static/:filename')
 def static_file(filename):

@@ -5,6 +5,7 @@ html, body {
     font-size: 0.9em;
     text-align: center;
     background-color:#000;
+    color: #eee;
 }
 
 input, select {

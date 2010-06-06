@@ -2,7 +2,7 @@
 from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import *
-import datetime, os, math,random, pydot
+import datetime, os, math,random, pydot,urllib, hashlib
 
 current_db_rev = 1
 Base = declarative_base()
@@ -156,14 +156,38 @@ class Player(Base):
 	email 			= Column( String(180) )
 	role			= Column( Integer )
 	do_hide_results = Column( Boolean )
+	visicon			= Column( String(255),nullable=True )
 
-	def __init__(self, nick='noname', role=Roles.User, pw=''):
+	def __init__(self, nick='noname', role=Roles.User, pw='',email=''):
 		self.nick 		= nick
 		self.role 		= role
-		do_hide_results = False
+		self.pw			= pw
+		self.email		= email
+		self.__saveVisicon()
 
 	def __str__(self):
 		return "Player(id:%d) %s "%(self.id, self.nick)
+		
+	def __saveVisicon(self):
+		if self.visicon:
+			return
+		import visicon,tempfile,shutil
+		v = visicon.Visicon( self.nick + self.email, '42' )
+		try: 
+			with tempfile.NamedTemporaryFile() as tmp:
+				v.draw_image().save( tmp,'png' )
+				fn = 'images/visicons/%s.png'%self.nick 
+				shutil.copy( tmp.name, fn )
+				import siteglobals
+				self.visicon = 'http://%s:%s/%s'%(siteglobals.config.get("site","baseurl"),siteglobals.config.get("site","port"), fn)
+		except Exception,e:
+			print e
+			self.visicon = None
+	
+	def gravatarUrl(self,size = 40):
+		# construct the url
+		gravatar_url = "http://www.gravatar.com/avatar/" + hashlib.md5(self.email).hexdigest() + "?"
+		return gravatar_url + urllib.urlencode({'default':self.visicon, 'size':str(size)})
 	
 class Team(Base):
 	__tablename__ 	= 'teams'
@@ -261,7 +285,7 @@ class Backend:
 
 	def addDefaultData(self):
 		session = self.sessionmaker()
-		self.nullPlayer = Player(nick='nullPlayer')
+		self.nullPlayer = Player(nick='nullPlayer',email='koshi@springlobby.info')
 		session.add( self.nullPlayer )
 		self.nullTeam = Team( 'nullTeam' )
 		self.nullTeam.players.append( self.nullPlayer )
@@ -269,14 +293,14 @@ class Backend:
 		session.commit()
 		players = []
 		teams = []
-		for i in range(2054):
+		for i in range(200):
 			players.append( Player(nick='dummy_%d'%i ) )
 		session.add_all( players )
 		session.commit()
-		for i in range(80):
+		for i in range(32):
 			t = Team(nick='Team_%d'%i )
 			teams.append( t )
-			for j in range(random.randint(1,7)):
+			for j in range(random.randint(1,5)):
 				t.players.append( players[i*j] )
 			session.add( t )
 			session.commit()
