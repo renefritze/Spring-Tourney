@@ -179,7 +179,8 @@ class Player(Base):
 				fn = 'images/visicons/%s.png'%self.nick 
 				shutil.copy( tmp.name, fn )
 				import siteglobals
-				self.visicon = 'http://%s:%s/%s'%(siteglobals.config.get("site","baseurl"),siteglobals.config.get("site","port"), fn)
+				#self.visicon = 'http://%s:%s/%s'%(siteglobals.config.get("site","baseurl"),siteglobals.config.get("site","port"), fn)#debug
+				self.visicon = 'http://%s/%s'%(siteglobals.config.get("site","baseurl"), fn)
 		except Exception,e:
 			print e
 			self.visicon = None
