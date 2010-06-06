@@ -1,89 +1,106 @@
-var Log = {
-    elem: false,
-    write: function(text){
-        if (!this.elem) 
-            this.elem = document.getElementById('log');
-        this.elem.innerHTML = text;
-        this.elem.style.left = (500 - this.elem.offsetWidth / 2) + 'px';
-    }
-};
+var labelType, useGradients, nativeTextSupport, animate;
 
-function addEvent(obj, type, fn) {
-    if (obj.addEventListener) obj.addEventListener(type, fn, false);
-    else obj.attachEvent('on' + type, fn);
+(function() {
+  var ua = navigator.userAgent,
+      iStuff = ua.match(/iPhone/i) || ua.match(/iPad/i),
+      typeOfCanvas = typeof HTMLCanvasElement,
+      nativeCanvasSupport = (typeOfCanvas == 'object' || typeOfCanvas == 'function'),
+      textSupport = nativeCanvasSupport 
+        && (typeof document.createElement('canvas').getContext('2d').fillText == 'function');
+  //I'm setting this based on the fact that ExCanvas provides text support for IE
+  //and that as of today iPhone/iPad current text support is lame
+  labelType = (!nativeCanvasSupport || (textSupport && !iStuff))? 'Native' : 'HTML';
+  nativeTextSupport = labelType == 'Native';
+  useGradients = nativeCanvasSupport;
+  animate = !(iStuff || !nativeCanvasSupport);
+})();
+
+var Log = {
+  elem: false,
+  write: function(text){
+    if (!this.elem) 
+      this.elem = document.getElementById('log');
+    this.elem.innerHTML = text;
+    this.elem.style.left = (500 - this.elem.offsetWidth / 2) + 'px';
+  }
 };
 
 
 function init(){
-    function get(id) {
-      return document.getElementById(id);  
-    };
     //init data
     var json = tree;
     //end
-    var infovis = document.getElementById('infovis');
-    var w = infovis.offsetWidth, h = infovis.offsetHeight;
-    //init canvas
-    //Create a new canvas instance.
-    var canvas = new Canvas('mycanvas', {
-        'injectInto': 'infovis',
-        'width': w,
-        'height': h,
-        'backgroundColor': '#1a1a1a'
+      $jit.ST.Plot.NodeTypes.implement({
+      'stroke-rect': {
+        'render': function(node, canvas) {
+          var width = node.getData('width'),
+              height = node.getData('height'),
+              pos = this.getAlignedPos(node.pos.getc(true), width, height),
+              posX = pos.x + width/2,
+              posY = pos.y + height/2;
+          this.nodeHelper.rectangle.render('fill', {x: posX, y: posY}, width, height, canvas);
+          this.nodeHelper.rectangle.render('stroke', {x: posX, y: posY}, width, height, canvas);
+        }
+      }
     });
-    //end
-    
     //init st
     //Create a new ST instance
-    var st = new ST(canvas, {
-        //set duration for the animation
-        duration: 800,
-        //set animation transition type
-        transition: Trans.Quart.easeInOut,
+    var st = new $jit.ST({
+        //id of viz container element
+        injectInto: 'infovis',
         //set distance between node and its children
-        levelDistance: 40,
+        levelDistance: 50,
+        //set an X offset
+        offsetX: -230,
 		orientation: "right",
-		levelsToShow: 5,
-// 		align: "center",
 		constrained: false,
-					
-        //set node and edge styles
+		levelsToShow: 25,
+        //set node, edge and label styles
         //set overridable=true for styling individual
         //nodes or edges
+		Navigation: {
+          enable: true,
+          panning: true,
+          zooming: 20
+        },
         Node: {
+            overridable: true,
+            type: 'stroke-rect',
             height: 40,
             width: 120,
-            type: 'rectangle',
-            color: '#aaa',
-            overridable: true
+            //canvas specific styles
+            CanvasStyles: {
+              fillStyle: '#daa',
+              strokeStyle: '#ffc',
+              lineWidth: 2
+            }
         },
-        
         Edge: {
+            overridable: true,
             type: 'bezier',
-            overridable: true
+            color: '#ffc',
+            lineWidth: 1
         },
-        
-        onBeforeCompute: function(node){
-            Log.write("loading " + node.name);
-        },
-        
-        onAfterCompute: function(){
-            Log.write("done");
-        },
-        
-        //This method is called on DOM label creation.
-        //Use this method to add event handlers and styles to
-        //your node.
-        onCreateLabel: function(label, node){
+//         Label: {
+//             type: labelType,
+//             style: 'bold',
+//             size: 10,
+//             color: '#333'
+//         },
+		onCreateLabel: function(label, node){
             label.id = node.id;            
             label.innerHTML = node.data.html;
             label.onclick = function(){
-                st.onClick(node.id);
+            	if(normal.checked) {
+            	  st.onClick(node.id);
+            	} else {
+                st.setRoot(node.id, 'animate');
+            	}
             };
             //set label styles
             var style = label.style;
-            style.width = 130 + 'px';
-            style.height = 47 + 'px';            
+            style.width = 110 + 'px';
+            style.height = 40 + 'px';            
             style.cursor = 'pointer';
             style.color = '#333';
             style.fontSize = '0.8em';
@@ -104,12 +121,11 @@ function init(){
             }
             else {
                 delete node.data.$color;
-                var GUtil = Graph.Util;
                 //if the node belongs to the last plotted level
-                if(!GUtil.anySubnode(node, "exist")) {
+                if(!node.anySubnode("exist")) {
                     //count children number
                     var count = 0;
-                    GUtil.eachSubnode(node, function(n) { count++; });
+                    node.eachSubnode(function(n) { count++; });
                     //assign a node color based on
                     //how many children it has
                     node.data.$color = ['#aaa', '#baa', '#caa', '#daa', '#eaa', '#faa'][count];                    
@@ -138,16 +154,17 @@ function init(){
     //compute node positions and layout
     st.compute();
     //optional: make a translation of the tree
-    st.geom.translate(new Complex(-200, 0), "pos");
+    st.geom.translate(new $jit.Complex(-200, 0), "current");
     //emulate a click on the root node.
     st.onClick(st.root);
-// 	st.refresh();
     //end
     //Add event handlers to switch spacetree orientation.
-    var top = get('r-top'), 
-    left = get('r-left'), 
-    bottom = get('r-bottom'), 
-    right = get('r-right');
+    var top = $jit.id('r-top'), 
+        left = $jit.id('r-left'), 
+        bottom = $jit.id('r-bottom'), 
+        right = $jit.id('r-right'),
+        normal = $jit.id('s-normal');
+        
     
     function changeHandler() {
         if(this.checked) {
@@ -162,5 +179,4 @@ function init(){
     
     top.onchange = left.onchange = bottom.onchange = right.onchange = changeHandler;
     //end
-
 }
