@@ -282,7 +282,7 @@ class Backend:
 		oldrev = self.GetDBRevision()
 		self.UpdateDBScheme( oldrev, current_db_rev )
 		self.SetDBRevision( current_db_rev )
-		self.addDefaultData()
+		#self.addDefaultData()
 
 	def addDefaultData(self):
 		session = self.sessionmaker()
