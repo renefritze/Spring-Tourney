@@ -34,23 +34,3 @@ env = Environment(loader=FileSystemLoader('templates'))
 cache = CacheManager(**parse_cache_config_options(cache_opts))
 tasbot = tasbot.bot()
 tasbot.run(SimpleConfig.tasbot_cfg_filename,False,True)
-
-class saferoute(object):
-	def __init__( self, path=None, method='GET' ):
-		self.path = path
-		self.method = method
-		
-	def __call__(self, f):
-			@route( self.path, self.method )
-			def wrapper(*args, **kargs):
-				print 'koko'
-				global is_debug
-				if is_debug:
-					ret = f(*args, **kargs)
-				else:
-					try:
-						ret = f(*args,**kargs)
-					except Exception, m:
-						return env.get_template('error.html').render(err_msg=str(m))
-				return ret		
-			return wrapper
