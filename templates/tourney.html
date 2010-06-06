@@ -1,15 +1,10 @@
 {% extends "base.html" %}
 
 {% block head %}
-<!-- <script type="text/javascript" src="tourneys/{{tourney.id}}.js"></script> -->
-<!-- <script type="text/javascript" src="static/raphael-min.js"></script> -->
-<script type="text/javascript" src="static/raphael.js"></script>
-    <script type="text/javascript" src="static/dracula_graffle.js"></script>
-<!--  Graphs  -->
-    <script type="text/javascript" src="static/dracula_graph.js"></script>
-    <script type="text/javascript" src="static/dracula_algorithms.js"></script>
-
+<!--[if IE]><script language="javascript" type="text/javascript" src="/static/excanvas.js"></script><![endif]--> 
+<script language="javascript" type="text/javascript" src="/static/jit-yc.js"></script>
 <script type="text/javascript" src="tourneys/{{tourney.id}}.js"></script>
+
 <script type="text/javascript">
 	var width = 640;
 	var height = 480;
@@ -36,7 +31,8 @@ function subTree( r, nodeId, direction /*-1:up/1:down*/, xoffset, yoffset) {
 }
 window.onload = function () {
 
-	var r = Raphael("match_container", 640, 480);
+	var r = Raphael("match_container", width,height );
+
 	var offset = 0;
 	var final = matches[final_id];
 	var final_box = matchBox( r, final, 0 );
