@@ -22,6 +22,5 @@ def output(session, id=0):
 			raise ElementNotFoundException( id )
 
 	ret = env.get_template('profile.html').render( player=player )
-	session.close()
 	return ret
 
