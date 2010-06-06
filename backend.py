@@ -24,18 +24,19 @@ players_team = Table('players_team', Base.metadata,
 )
 
 class JSONnode(object):
-	def __init__(s,root_match):
+	def __init__(s,root_match,matches):
 		print root_match
 		s.id		= 'Match #%d'%root_match.id
 		s.name		= s.id
 		s.data		= MatchData(root_match)
 		s.children	= []
 		
-		if root_match.prev_matchA:
-			#print root_match.prev_matchA_id
-			s.children.append( JSONnode( root_match.prev_matchA ) )
-		if root_match.prev_matchB:
-			s.children.append( JSONnode( root_match.prev_matchB ) )
+		if root_match.prev_matchA_id:
+			m = matches[root_match.prev_matchA_id]
+			s.children.append( JSONnode( m, matches ) )
+		if root_match.prev_matchB_id:
+			m = matches[root_match.prev_matchB_id]
+			s.children.append( JSONnode( m, matches ) )
 		
 		
 class MatchData(object):
@@ -111,16 +112,18 @@ class Tourney(Base):
 		graph.write_png( fn )
 	
 	def saveJSONdata(self):
-		nodes = dict()
+		matches = dict()
 		match_q = object_session(self).query( Match ).filter( Match.tourney_id == self.id )
 		for m in match_q:
+			matches[m.id] = m
 			if not m.next:
 				final = m
 		#print final
-		tree = JSONnode( final )
+		tree = JSONnode( final, matches )
 		import jsonpickle
+		jsonpickle.set_encoder_options('json', sort_keys=True, indent=4)
 		with open('tourneys/%s.js'%self.id,'w') as tourney_js:
-			tourney_js.write( 'var tree = %s;\n' % jsonpickle.encode( tree , unpicklable=True ) )
+			tourney_js.write( 'var tree = %s;\n' % jsonpickle.encode( tree , unpicklable=False ) )
 			#tourney_js.write( 'var edges = %s;\n' % jsonpickle.encode( edges , unpicklable=False ) )
 			tourney_js.write( 'var final_id = %s;\n' % jsonpickle.encode( final.id , unpicklable=False ) )
 	
