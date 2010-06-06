@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
 from bottle import route,request,send_file
-from siteglobals import env, db, config
+from siteglobals import env, db, config,saferoute
 from utils import *
 from backend import Player,Tourney
 
-@route('/', method='GET')
+@saferoute('/', method='GET')
 def output():
-	try:
+	#try:
 		session = db.sessionmaker()
-				
+		raise Exception('DE')
 		ret = env.get_template('index.html').render( )
 		session.close()
 		return ret
 
-	except Exception, m:
-		return env.get_template('error.html').render(err_msg=str(m))
+	#except Exception, m:
+		#return env.get_template('error.html').render(err_msg=str(m))
 

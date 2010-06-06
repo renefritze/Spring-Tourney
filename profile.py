@@ -8,7 +8,6 @@ from backend import Player,ElementNotFoundException
 def tourney_js(filename):
 	return send_file( filename, root=os.getcwd()+'/tourneys/' )
 
-
 @route('/profile/:id', method='GET')
 def output(id=0):
 	try:

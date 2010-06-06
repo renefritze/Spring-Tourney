@@ -5,6 +5,7 @@ from ConfigParser import SafeConfigParser as ConfigParser
 from beaker.cache import CacheManager
 from beaker.util import parse_cache_config_options
 import tasbot
+from bottle import route
 
 class SimpleConfig(ConfigParser):
 	tasbot_cfg_filename = '.tasbot.cfg'
@@ -27,8 +28,29 @@ cache_opts = {
     'cache.lock_dir': 	config.get('cache','lock_dir')
 }
 
+
 is_debug = config.getboolean('site','debug')
 env = Environment(loader=FileSystemLoader('templates'))
 cache = CacheManager(**parse_cache_config_options(cache_opts))
 tasbot = tasbot.bot()
 tasbot.run(SimpleConfig.tasbot_cfg_filename,False,True)
+
+class saferoute(object):
+	def __init__( self, path=None, method='GET' ):
+		self.path = path
+		self.method = method
+		
+	def __call__(self, f):
+			@route( self.path, self.method )
+			def wrapper(*args, **kargs):
+				print 'koko'
+				global is_debug
+				if is_debug:
+					ret = f(*args, **kargs)
+				else:
+					try:
+						ret = f(*args,**kargs)
+					except Exception, m:
+						return env.get_template('error.html').render(err_msg=str(m))
+				return ret		
+			return wrapper
